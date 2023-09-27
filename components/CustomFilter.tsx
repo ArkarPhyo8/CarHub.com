@@ -1,34 +1,29 @@
 "use client";
-import { CustomFilterProps, optionProps } from "@/types";
-import { Listbox, Transition } from "@headlessui/react";
+
+import { Fragment, useState } from "react";
 import Image from "next/image";
-import React from "react";
-import { useState } from "react";
-import { Fragment } from "react";
-import { useRouter } from "next/navigation";
-import { updateSearchParams } from "@/utils";
+import { Listbox, Transition } from "@headlessui/react";
+import { CustomFilterProps } from "@/types";
 
-const CustomFilter = ({ title, options }: CustomFilterProps) => {
-  const router = useRouter();
-  const [selected, setSelected] = useState(options[0]);
+export default function CustomFilter<T>({
+  options,
+  setFilter,
+}: CustomFilterProps<T>) {
+  const [menu, setMenu] = useState(options[0]); // State for storing the selected option
 
-  const handleUpdateParams = (e: { title: string; value: string }) => {
-    const newPathName = updateSearchParams(title, e.value.toLowerCase());
-
-    return router.push(newPathName);
-  };
   return (
     <div className="w-fit">
       <Listbox
-        value={selected}
+        value={menu}
         onChange={(e) => {
-          setSelected(e);
-          handleUpdateParams(e);
+          setMenu(e);
+          setFilter(e.value as unknown as T); // Update the selected option in state
         }}
       >
         <div className="relative w-fit z-10">
+          {/* Button for the listbox */}
           <Listbox.Button className="custom-filter__btn">
-            <span className="block truncate">{selected.title}</span>
+            <span className="block truncate">{menu.title}</span>
             <Image
               src="/chevron-up-down.svg"
               width={20}
@@ -37,6 +32,7 @@ const CustomFilter = ({ title, options }: CustomFilterProps) => {
               alt="chevron_up-down"
             />
           </Listbox.Button>
+          {/* Transition for displaying the options */}
           <Transition
             as={Fragment} // group multiple elements without introducing an additional DOM node i.e., <></>
             leave="transition ease-in duration-100"
@@ -44,6 +40,7 @@ const CustomFilter = ({ title, options }: CustomFilterProps) => {
             leaveTo="opacity-0"
           >
             <Listbox.Options className="custom-filter__options">
+              {/* Map over the options and display them as listbox options */}
               {options.map((option) => (
                 <Listbox.Option
                   key={option.title}
@@ -56,6 +53,7 @@ const CustomFilter = ({ title, options }: CustomFilterProps) => {
                 >
                   {({ selected }) => (
                     <>
+                      {/* Display the option title */}
                       <span
                         className={`block truncate ${
                           selected ? "font-medium" : "font-normal"
@@ -73,6 +71,4 @@ const CustomFilter = ({ title, options }: CustomFilterProps) => {
       </Listbox>
     </div>
   );
-};
-
-export default CustomFilter;
+}
